@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presence Grid</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #2a0f4b, #0b0014 70%);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      color: #f8eaff;
+      font-family: 'Karma', sans-serif;
+    }
+    #header {
+      padding: 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 20px rgba(255, 170, 255, 0.1);
+    }
+    #grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(6px, 1fr));
+      grid-auto-rows: 6px;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 6px #b37dff);
+    }
+    .cell {
+      background: rgba(255, 255, 255, 0.03);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      border-radius: 2px;
+    }
+    .cell.active {
+      background: #d59cff;
+      box-shadow: 0 0 6px #d59cff, 0 0 12px #a054ff;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h2>Global Presence Grid</h2>
+    <p>Click anywhere on the grid to mark your presence while meditating.</p>
+  </div>
+  <div id="grid"></div>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const totalCells = 50000; // adjustable during development; 80 million not yet practical in-browser
+
+    for (let i = 0; i < totalCells; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.addEventListener('click', () => {
+        document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
+        cell.classList.add('active');
+      });
+      grid.appendChild(cell);
+    }
+  </script>
+</body>
+</html>

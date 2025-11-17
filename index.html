@@ -1,1 +1,43 @@
-<html><body><nav><a href='mission.html'>Mission</a></nav><h1>Home</h1></body></html>
+<!DOCTYPE html><html><head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1.0'>
+<title>Presence Grid – Home</title>
+<link rel='stylesheet' href='styles.css'>
+<script src='https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js'></script>
+<script src='https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js'></script>
+</head><body>
+<nav>
+<a href='index.html'>Home</a><a href='mission.html'>Mission</a>
+<a href='calendar.html'>Calendar</a><a href='subscribe.html'>Subscribe</a>
+</nav>
+<div class='header-bar'><h2>Global Presence Grid</h2>
+<p>Click one point on the grid to mark where you are meditating right now.</p></div>
+<div id='grid'></div>
+<div id='presenceCounter' class='presence-counter'>
+<span id='presenceCount'>0</span><span id='presenceLabel'>people here</span>
+</div>
+<div id='presenceOrbs'></div>
+<script>
+const firebaseConfig={apiKey:'YOUR_API_KEY',authDomain:'YOUR_AUTH_DOMAIN',databaseURL:'YOUR_DATABASE_URL',projectId:'YOUR_PROJECT_ID',storageBucket:'YOUR_STORAGE_BUCKET',messagingSenderId:'YOUR_MESSAGING_SENDER_ID',appId:'YOUR_APP_ID'};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const grid=document.getElementById('grid');
+for(let i=0;i<50000;i++){const c=document.createElement('div');c.classList.add('cell');c.onclick=()=>{document.querySelectorAll('.cell.active').forEach(x=>x.classList.remove('active'));c.classList.add('active');};grid.appendChild(c);}
+const presenceRef=db.ref('presence');
+const myId=Math.random().toString(36).substring(2);
+const myRef=presenceRef.child(myId);
+myRef.set({joined:Date.now()});
+addEventListener('beforeunload',()=>myRef.remove());
+const countEl=document.getElementById('presenceCount');
+const labelEl=document.getElementById('presenceLabel');
+const counterEl=document.getElementById('presenceCounter');
+const orbContainer=document.getElementById('presenceOrbs');
+let lastCount=0;
+presenceRef.on('value',s=>{
+ const data=s.val()||{};const keys=Object.keys(data);const count=keys.length;
+ countEl.textContent=count;labelEl.textContent=count===1?'person here':'people here';
+ if(count!==lastCount){counterEl.classList.add('pulse');setTimeout(()=>counterEl.classList.remove('pulse'),400);}
+ lastCount=count;orbContainer.innerHTML='';
+ keys.forEach(id=>{const orb=document.createElement('div');orb.className='presence-orb';orbContainer.appendChild(orb);});
+});
+</script>
+</body></html>

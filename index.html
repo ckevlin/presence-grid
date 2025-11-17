@@ -40,6 +40,60 @@
       background: #d59cff;
       box-shadow: 0 0 6px #d59cff, 0 0 12px #a054ff;
     }
+    /* Presence counter styling */
+.presence-counter {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  font-family: 'Karma', system-ui;
+  color: white;
+  font-size: 18px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  box-shadow: 0 0 25px rgba(255, 200, 255, 0.2);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Pulse animation when number changes */
+.presence-counter.pulse {
+  transform: scale(1.08);
+  box-shadow: 0 0 35px rgba(255, 200, 255, 0.4);
+}
+
+/* Presence orbs container */
+#presenceOrbs {
+  position: fixed;
+  bottom: 80px;
+  left: 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 60vw;
+}
+
+/* Individual presence orbs */
+.presence-orb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd6ff, #b26bff, #5f2aff);
+  box-shadow: 0 0 12px rgba(180, 120, 255, 0.9);
+  animation: float 4s infinite ease-in-out;
+  opacity: 0.9;
+}
+
+/* Slight floating motion */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
   </style>
 </head>
 <body>

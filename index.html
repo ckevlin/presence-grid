@@ -1,59 +1,121 @@
-<!DOCTYPE html><html><head>
-<meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1.0'>
-<title>Presence Grid – Home</title>
-<link rel='stylesheet' href='styles.css'>
-<script src='https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js'></script>
-<script src='https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js'></script>
-</head><body>
-<nav>
-<a href='index.html'>Home</a><a href='mission.html'>Mission</a>
-<a href='calendar.html'>Calendar</a><a href='subscribe.html'>Subscribe</a>
-</nav>
-<div class='header-bar'><h2>Global Presence Grid</h2>
-<p>Click one point on the grid to mark where you are meditating right now.</p></div>
-<div id='grid'></div>
-<div id='presenceCounter' class='presence-counter'>
-<span id='presenceCount'>0</span><span id='presenceLabel'>people here</span>
-</div>
-<div id='presenceOrbs'></div>
-<script>
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presence Grid – Home</title>
+  <link rel="stylesheet" href="styles.css" />
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCKxmdBwQCmmjZ84Vf8SmnzdH9jCPblIx8",
-  authDomain: "presence-grid.firebaseapp.com",
-  projectId: "presence-grid",
-  storageBucket: "presence-grid.firebasestorage.app",
-  messagingSenderId: "194505973280",
-  appId: "1:194505973280:web:8ea3e7ee069aa307b1e645"
-};
+  <!-- Firebase (compat so we can use the global firebase namespace) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body>
+  <!-- Shared nav -->
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="mission.html">Mission</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="subscribe.html">Subscribe</a>
+  </nav>
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
-const grid=document.getElementById('grid');
-for(let i=0;i<50000;i++){const c=document.createElement('div');c.classList.add('cell');c.onclick=()=>{document.querySelectorAll('.cell.active').forEach(x=>x.classList.remove('active'));c.classList.add('active');};grid.appendChild(c);}
-const presenceRef=db.ref('presence');
-const myId=Math.random().toString(36).substring(2);
-const myRef=presenceRef.child(myId);
-myRef.set({joined:Date.now()});
-addEventListener('beforeunload',()=>myRef.remove());
-const countEl=document.getElementById('presenceCount');
-const labelEl=document.getElementById('presenceLabel');
-const counterEl=document.getElementById('presenceCounter');
-const orbContainer=document.getElementById('presenceOrbs');
-let lastCount=0;
-presenceRef.on('value',s=>{
- const data=s.val()||{};const keys=Object.keys(data);const count=keys.length;
- countEl.textContent=count;labelEl.textContent=count===1?'person here':'people here';
- if(count!==lastCount){counterEl.classList.add('pulse');setTimeout(()=>counterEl.classList.remove('pulse'),400);}
- lastCount=count;orbContainer.innerHTML='';
- keys.forEach(id=>{const orb=document.createElement('div');orb.className='presence-orb';orbContainer.appendChild(orb);});
-});
-</script>
-</body></html>
+  <!-- Header for home -->
+  <div class="header-bar">
+    <h2>Global Presence Grid</h2>
+    <p>Click one point on the grid to mark where you are meditating right now.</p>
+  </div>
+
+  <!-- Presence Grid -->
+  <div id="grid"></div>
+
+  <!-- Realtime presence UI -->
+  <div id="presenceCounter" class="presence-counter">
+    <span id="presenceCount">0</span>
+    <span id="presenceLabel">people here</span>
+  </div>
+  <div id="presenceOrbs"></div>
+
+  <script>
+    // 🔐 Replace this with your actual Firebase config from the console
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Build the grid
+    const grid = document.getElementById('grid');
+    const totalCells = 50000;
+
+    for (let i = 0; i < totalCells; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+
+      cell.addEventListener('click', () => {
+        // Only allow one active cell at a time (client-side)
+        document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
+        cell.classList.add('active');
+      });
+
+      grid.appendChild(cell);
+    }
+
+    // --- Realtime presence tracking ---
+    const presenceRef = db.ref("presence");
+    const myId = Math.random().toString(36).substring(2);
+    const myRef = presenceRef.child(myId);
+
+    // Mark myself as present
+    myRef.set({ joined: Date.now() });
+
+    // Clean up on tab close
+    window.addEventListener("beforeunload", () => {
+      myRef.remove();
+    });
+
+    // UI elements
+    const countEl = document.getElementById("presenceCount");
+    const labelEl = document.getElementById("presenceLabel");
+    const counterEl = document.getElementById("presenceCounter");
+    const orbContainer = document.getElementById("presenceOrbs");
+
+    let lastCount = 0;
+
+    // Listen for realtime presence changes
+    presenceRef.on("value", snapshot => {
+      const data = snapshot.val() || {};
+      const keys = Object.keys(data);
+      const count = keys.length;
+
+      // Update text
+      countEl.textContent = count;
+      labelEl.textContent = count === 1 ? "person here" : "people here";
+
+      // Pulse animation when count changes
+      if (count !== lastCount) {
+        counterEl.classList.add("pulse");
+        setTimeout(() => counterEl.classList.remove("pulse"), 400);
+      }
+
+      lastCount = count;
+
+      // Rebuild presence orbs
+      orbContainer.innerHTML = "";
+      keys.forEach(id => {
+        const orb = document.createElement("div");
+        orb.className = "presence-orb";
+        orbContainer.appendChild(orb);
+      });
+    });
+  </script>
+</body>
+</html>
+

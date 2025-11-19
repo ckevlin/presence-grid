@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Swirling Aura</title>
+<style>
+    body {
+        margin: 0;
+        background: #080528;
+        display: flex;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+    }
+    canvas {
+        filter: blur(10px);
+    }
+</style>
+</head>
+<body>
+
+<canvas id="aura" width="600" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("aura");
+const ctx = canvas.getContext("2d");
+
+let angle = 0;
+
+function drawAura() {
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Outer swirl
+    drawSwirl(cx, cy, 180, ["#2bd9ff", "#00ffff", "#2bd9ff"], angle);
+
+    // Inner swirl (opposite direction)
+    drawSwirl(cx, cy, 120, ["#c77dff", "#00eaff", "#c77dff"], -angle * 1.4);
+
+    // Core glow
+    drawGlow(cx, cy, 160, "#b066ff");
+    
+    angle += 0.0025;
+    requestAnimationFrame(drawAura);
+}
+
+function drawSwirl(cx, cy, radius, colors, rotation) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+
+    const gradient = ctx.createConicGradient(0, 0, 0);
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(0.5, colors[1]);
+    gradient.addColorStop(1, colors[2]);
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = radius;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius / 2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawGlow(cx, cy, radius, color) {
+    const gradient = ctx.createRadialGradient(
+        cx, cy, 0,
+        cx, cy, radius
+    );
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+drawAura();
+</script>
+
+</body>
+</html>
